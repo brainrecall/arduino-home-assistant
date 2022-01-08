@@ -8,7 +8,7 @@ byte mac[] = {0x00, 0x10, 0xFA, 0x6E, 0x38, 0x4A};
 EthernetClient client;
 HADevice device(mac, sizeof(mac));
 HAMqtt mqtt(client, device);
-HACover cover("my-cover"); // "my-cover" is unique ID of the cover. You should define your own ID.
+HACover cover("my-cover", false, false); // "my-cover" is unique ID of the cover. You should define your own ID. False and false are to keep stop and position enabled.
 
 void onCoverCommand(HACover::CoverCommand cmd) {
     if (cmd == HACover::CommandOpen) {
@@ -32,11 +32,16 @@ void onCoverCommand(HACover::CoverCommand cmd) {
     // You can also report position using setPosition() method
 }
 
+void onCoverSetPositionCommand(uint8_t pos) {
+  Serial.println("Set Position Command: " + String(pos));
+}
+
 void setup() {
     Serial.begin(9600);
     Ethernet.begin(mac);
 
     cover.onCommand(onCoverCommand);
+    cover.onSetPositionCommand(onCoverSetPositionCommand);
     cover.setName("My cover"); // optional
     // cover.setRetain(true); // optionally you can set retain flag
 
