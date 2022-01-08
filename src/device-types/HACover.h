@@ -5,12 +5,14 @@
 
 #ifdef ARDUINOHA_COVER
 
-#define HACOVER_CALLBACK(name) void (*name)(CoverCommand cmd)
+#define HACOVER_COMMAND_CALLBACK(name) void (*name)(CoverCommand cmd)
+#define HACOVER_SETPOSITIONCOMMAND_CALLBACK(name) void (*name)(uint8_t pos)
 
 class HACover : public BaseDeviceType
 {
 public:
     static const char* PositionTopic;
+    static const char* SetPositionTopic;
 
     enum CoverState {
         StateUnknown = 0,
@@ -101,8 +103,17 @@ public:
      *
      * @param callback
      */
-    inline void onCommand(HACOVER_CALLBACK(callback))
+    inline void onCommand(HACOVER_COMMAND_CALLBACK(callback))
         { _commandCallback = callback; }
+
+    /**
+     * Registers callback that will be called each time the set position command from HA is received.
+     * Please note that it's not possible to register multiple callbacks for the same covers.
+     *
+     * @param callback
+     */
+    inline void onSetPositionCommand(HACOVER_SETPOSITIONCOMMAND_CALLBACK(callback))
+        { _setPositionCommandCallback = callback; }
 
 protected:
     bool publishState(CoverState state);
@@ -111,7 +122,8 @@ protected:
     bool writeSerializedData(const char* serializedDevice) const override;
     void handleCommand(const char* cmd);
 
-    HACOVER_CALLBACK(_commandCallback);
+    HACOVER_COMMAND_CALLBACK(_commandCallback);
+    HACOVER_SETPOSITIONCOMMAND_CALLBACK(_setPositionCommandCallback);
     CoverState _currentState;
     int16_t _currentPosition;
     bool _retain;
